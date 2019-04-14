@@ -1,0 +1,21 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t lgjohnson/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run lgjohnson/react-test npm test -- --coverage
+
+after_success:
+  - docker build -t lgjohnson/multi-client ./client
+  - docker build -t lgjohnson/multi-nginx ./nginx
+  - docker build -t lgjohnson/multi-server ./server
+  - docker build -t lgjohnson/multi-worker ./worker
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push lgjohnson/multi-client
+  - docker push lgjohnson/multi-nginx
+  - docker push lgjohnson/multi-server
+  - docker push lgjohnson/multi-worker
+
